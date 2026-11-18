@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Red String & Blooming Rose - Qaysara Amani</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #050508;
+      color: #ccc;
+      font-family: Consolas, "Courier New", monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Kontena Utama */
+    .stage {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 960px;
+      max-height: 88vh;
+      aspect-ratio: 16 / 10;
+    }
+    #mainCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 8px;
+    }
+
+    /* Butang di tengah-tengah bentuk hati */
+    #heartBtn {
+      position: absolute;
+      top: 36%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(20, 6, 12, 0.88);
+      color: #ff6b8b;
+      border: 1.5px solid #ff3b60;
+      padding: 10px 22px;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      border-radius: 50px;
+      box-shadow: 0 0 18px rgba(255, 50, 90, 0.45), inset 0 0 10px rgba(255, 50, 90, 0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: pulseBtn 2s infinite ease-in-out;
+      z-index: 10;
+    }
+    #heartBtn.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    #heartBtn:hover {
+      background: #ff335c;
+      color: #fff;
+      box-shadow: 0 0 28px rgba(255, 70, 110, 0.9);
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+    @keyframes pulseBtn {
+      0%, 100% { box-shadow: 0 0 14px rgba(255, 50, 90, 0.4); }
+      50% { box-shadow: 0 0 26px rgba(255, 75, 115, 0.8); }
+    }
+
+    /* Kawalan Bawah */
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      font-size: 12px;
+      color: #666;
+    }
+    .btn-small {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid #2e2e38;
+      color: #888;
+      padding: 5px 12px;
+      font-family: inherit;
+      font-size: 11px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .btn-small:hover {
+      border-color: #ff4d6d;
+      color: #ff6b8b;
+    }
+
+    /* POPUP MODAL BUNGA MEKAR */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 3, 6, 0.82);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      position: relative;
+      background: #060609;
+      border: 1px solid rgba(255, 75, 110, 0.3);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(255, 45, 85, 0.18);
+      max-width: 680px;
+      width: 100%;
+      overflow: hidden;
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px 18px 22px;
+    }
+    .modal-overlay.open .modal-card {
+      transform: translateY(0) scale(1);
+    }
+    .modal-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #777;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .modal-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #bbb;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-btn:hover {
+      background: #ff335c;
+      border-color: #ff335c;
+      color: #fff;
+    }
+    #roseCanvas {
+      width: 100%;
+      max-width: 620px;
+      height: auto;
+      aspect-ratio: 620 / 430;
+      display: block;
+      background: #040407;
+      border-radius: 8px;
+    }
+
+    /* Gaya Teks Kemas, Lembut & Tidak Seram */
+    .message-box {
+      margin-top: 14px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .message-box.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .msg-line1 {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: clamp(16px, 2.5vw, 21px);
+      font-weight: 600;
+      letter-spacing: 5px;
+      color: #ffd6e0;
+      text-shadow: 0 0 14px rgba(255, 90, 130, 0.65);
+      margin-bottom: 4px;
+    }
+    .msg-line2 {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: clamp(20px, 3.2vw, 27px);
+      font-weight: 700;
+      letter-spacing: 4px;
+      background: linear-gradient(90deg, #ff7597, #ffccd7, #ff7597);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 12px rgba(255, 60, 105, 0.45));
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skrin Utama: Red String & Hands -->
+  <div class="stage">
+    <canvas id="mainCanvas" width="960" height="600"></canvas>
+    <button id="heartBtn">❤ Click Here ❤</button>
+  </div>
+
+  <div class="controls">
+    <span>Tekan <b>[SPACE]</b> untuk ulang semula</span>
+    <button class="btn-small" id="replayMainBtn">↻ Ulang Animasi Tangan</button>
+  </div>
+
+  <!-- Popup Modal: Animasi Bunga Mawar Mekar (art.py) -->
+  <div class="modal-overlay" id="roseModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>$ py art.py — blooming rose</span>
+        <div class="modal-actions">
+          <button class="modal-btn" id="replayRoseBtn">↻ Mekar Semula</button>
+          <button class="modal-btn" id="closeModalBtn">✕ Tutup</button>
+        </div>
+      </div>
+
+      <canvas id="roseCanvas" width="620" height="430"></canvas>
+
+      <div class="message-box" id="messageBox">
+        <div class="msg-line1">STAY STRONG</div>
+        <div class="msg-line2">QAYSARA AMANI 🌸</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+       BAHAGIAN 1: ENJIN RED STRING & HANDS (MUAT PENUH SKRIN)
+       ========================================================= */
+    const mainCanvas = document.getElementById("mainCanvas");
+    const ctx = mainCanvas.getContext("2d");
+    const heartBtn = document.getElementById("heartBtn");
+    const replayMainBtn = document.getElementById("replayMainBtn");
+
+    const WIDTH = 960;
+    const HEIGHT = 600;
+    const CHAR_W = 6;
+    const CHAR_H = 10;
+    const COLS = Math.floor(WIDTH / CHAR_W);
+    const ROWS = Math.floor(HEIGHT / CHAR_H);
+
+    // Data anatomi tangan asal
+    const RAW_HAND = [
+      [-56, 4.5, -22, 2.5, 7.2, 6.4, 0.0, 0],
+      [-22, 2.5, -3, 0.5, 6.4, 5.4, 0.0, 0],
+      [-3, 0.5, 9, 0, 5.4, 6.6, 0.0, 0],
+      [7, 0, 21, -0.5, 7.0, 6.8, 0.0, 0],
+      [4, 5.5, 12, 9.5, 4.4, 3.6, 3.0, 0],
+      [12, 9.5, 19, 12.5, 3.6, 3.0, 3.5, 1],
+      [19, 12.5, 25, 13.2, 3.0, 2.4, 3.5, 1],
+      [25, 13, 27.5, 13.2, 1.7, 1.5, 4.0, 2],
+      [21, -5.5, 31, -6.4, 2.6, 2.4, 4.5, 0],
+      [31, -6.4, 40, -7.6, 2.4, 2.2, 4.5, 1],
+      [40, -7.6, 47, -9.0, 2.2, 1.9, 4.5, 1],
+      [43.5, -8.9, 47, -9.3, 1.3, 1.2, 5.0, 2],
+      [21.5, -2.0, 30, -1.5, 2.7, 2.5, 4.5, 0],
+      [30, -1.5, 37, 1.0, 2.5, 2.3, 4.5, 1],
+      [37, 1.0, 41, 5.0, 2.3, 2.0, 4.5, 1],
+      [39.5, 3.2, 41.2, 5.4, 1.3, 1.2, 5.0, 2],
+      [21.5, 1.5, 29, 2.5, 2.6, 2.4, 4.5, 0],
+      [29, 2.5, 35.5, 6.0, 2.4, 2.2, 4.5, 1],
+      [35.5, 6.0, 38, 10.5, 2.2, 1.9, 4.5, 1],
+      [37, 8.8, 38.2, 10.8, 1.2, 1.1, 5.0, 2],
+      [21, 4.8, 27, 6.2, 2.3, 2.1, 4.5, 0],
+      [27, 6.2, 32, 9.5, 2.1, 1.9, 4.5, 1],
+      [32, 9.5, 34, 13.5, 1.9, 1.6, 4.5, 1],
+      [33.2, 12, 34.2, 13.8, 1.1, 1.0, 5.0, 2],
+      [20, -4.8, 7, -2.2, 1.2, 1.1, 6.3, 0],
+      [20.5, -1.8, 7, -0.6, 1.2, 1.1, 6.3, 0],
+      [20.5, 1.4, 7, 1.4, 1.1, 1.0, 6.3, 0],
+      [21, -5.5, 21.5, -2.0, 3.0, 3.0, 4.2, 0],
+      [21.5, -2.0, 22, 1.5, 3.0, 3.0, 4.2, 0],
+      [21.5, 1.5, 21, 4.8, 2.9, 2.9, 4.2, 0],
+      [-4, -3.0, -3, -3.0, 2.0, 2.0, 4.8, 0]
+    ];
+
+    const HAND_CHARS = " .,-~:;=!*#$@";
+    const GRAY_COLORS = [];
+    for (let i = 0; i < HAND_CHARS.length; i++) {
+      const val = i / (HAND_CHARS.length - 1);
+      const g = Math.floor(90 + val * 155);
+      GRAY_COLORS.push(`rgb(${g}, ${g}, ${g})`);
+    }
+
+    const RED_COLORS = {
+      "@": "rgb(255, 75, 95)",
+      "#": "rgb(240, 45, 68)",
+      "*": "rgb(210, 32, 52)",
+      ":": "rgb(160, 20, 35)",
+      ".": "rgb(115, 12, 22)"
+    };
+
+    const bgStars = Array.from({ length: 65 }, () => ({
+      x: Math.random() * WIDTH,
+      y: Math.random() * HEIGHT,
+      phase: Math.random() * Math.PI * 2,
+      size: Math.random() < 0.3 ? 1.5 : 1
+    }));
+
+    function smoothstep(t) {
+      const c = Math.max(0.0, Math.min(1.0, t));
+      return c * c * (3.0 - 2.0 * c);
+    }
+
+    function rotatePt(px, py, ox, oy, angle) {
+      const ca = Math.cos(angle);
+      const sa = Math.sin(angle);
+      const dx = px - ox;
+      const dy = py - oy;
+      return [ox + dx * ca - dy * sa, oy + dx * sa + dy * ca];
+    }
+
+    function getPosedHand(curlAngle) {
+      const posed = [];
+      for (let i = 0; i < RAW_HAND.length; i++) {
+        let [x1, y1, x2, y2, r1, r2, z, h] = RAW_HAND[i];
+        if (i >= 8 && i <= 11) {
+          const pivotX = 21.0, pivotY = -5.5;
+          const mult = h === 1 ? 1.0 : (h === 2 ? 1.35 : 0.4);
+          const ang = curlAngle * mult;
+          [x1, y1] = rotatePt(x1, y1, pivotX, pivotY, ang);
+          [x2, y2] = rotatePt(x2, y2, pivotX, pivotY, ang);
+        } else if (h > 0) {
+          const pivotX = 21.0, pivotY = 0.0;
+          const ang = curlAngle * 0.25 * h;
+          [x1, y1] = rotatePt(x1, y1, pivotX, pivotY, ang);
+          [x2, y2] = rotatePt(x2, y2, pivotX, pivotY, ang);
+        }
+        posed.push([x1, y1, x2, y2, r1, r2, z, h]);
+      }
+      return posed;
+    }
+
+    const handGrid = new Float32Array(COLS * ROWS);
+    const stringGrid = new Uint8Array(COLS * ROWS);
+
+    function rasterizeHands(posedSegs, leftOx, rightOx, handOy) {
+      handGrid.fill(0.0);
+      for (let i = 0; i < posedSegs.length; i++) {
+        const [x1, y1, x2, y2, r1, r2, z] = posedSegs[i];
+        for (let s = 0; s < 2; s++) {
+          const side = s === 0 ? -1 : 1;
+          const sx1 = side === -1 ? leftOx + x1 : rightOx - x1;
+          const sy1 = handOy + y1;
+          const sx2 = side === -1 ? leftOx + x2 : rightOx - x2;
+          const sy2 = handOy + y2;
+
+          const maxR = Math.max(r1, r2) + 0.5;
+          const minWx = Math.min(sx1, sx2) - maxR;
+          const maxWx = Math.max(sx1, sx2) + maxR;
+          const minWy = Math.min(sy1, sy2) - maxR;
+          const maxWy = Math.max(sy1, sy2) + maxR;
+
+          const cStart = Math.max(0, Math.floor(minWx / 0.55 + COLS / 2));
+          const cEnd = Math.min(COLS - 1, Math.floor(maxWx / 0.55 + COLS / 2) + 1);
+          const rStart = Math.max(0, Math.floor(minWy / 0.95 + ROWS / 2));
+          const rEnd = Math.min(ROWS - 1, Math.floor(maxWy / 0.95 + ROWS / 2) + 1);
+
+          const dx = sx2 - sx1;
+          const dy = sy2 - sy1;
+          const lenSq = dx * dx + dy * dy;
+
+          for (let r = rStart; r <= rEnd; r++) {
+            const wy = (r - ROWS / 2) * 0.95;
+            const rowOffset = r * COLS;
+            for (let c = cStart; c <= cEnd; c++) {
+              const wx = (c - COLS / 2) * 0.55;
+              let t = 0.0;
+              if (lenSq > 0) {
+                t = ((wx - sx1) * dx + (wy - sy1) * dy) / lenSq;
+                if (t < 0.0) t = 0.0;
+                else if (t > 1.0) t = 1.0;
+              }
+              const cx = sx1 + t * dx;
+              const cy = sy1 + t * dy;
+              const rad = r1 + t * (r2 - r1);
+              const dSq = (wx - cx) * (wx - cx) + (wy - cy) * (wy - cy);
+
+              if (dSq < rad * rad) {
+                const nz = Math.sqrt(Math.max(0.0, 1.0 - dSq / (rad * rad)));
+                const ny = (wy - cy) / rad;
+                let shade = 0.65 * nz - 0.35 * ny + z * 0.03;
+                if (shade < 0.15) shade = 0.15;
+                else if (shade > 1.0) shade = 1.0;
+
+                const idx = rowOffset + c;
+                if (shade > handGrid[idx]) {
+                  handGrid[idx] = shade;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function cubicBezier(p0, p1, p2, p3, t) {
+      const u = 1.0 - t;
+      const u2 = u * u;
+      const u3 = u2 * u;
+      const t2 = t * t;
+      const t3 = t2 * t;
+      return [
+        u3 * p0[0] + 3 * u2 * t * p1[0] + 3 * u * t2 * p2[0] + t3 * p3[0],
+        u3 * p0[1] + 3 * u2 * t * p1[1] + 3 * u * t2 * p2[1] + t3 * p3[1]
+      ];
+    }
+
+    // Bentuk Hati yang telah dilaraskan supaya MUAT SEPENUHNYA di dalam skrin (tidak terpotong di atas)
+    function buildRedString(anchorL, anchorR, timeVal, morph) {
+      const sway = Math.sin(timeVal * 1.8) * 0.6 * morph;
+      const pulse = 1.0 + 0.018 * Math.sin(timeVal * 3.0) * morph;
+
+      // Koordinat menegak direndahkan supaya puncak hati mempunyai ruang kosong ~65px dari atas skrin
+      const crossPt = [0.0 + sway * 0.3, 6.0 * (1.0 - morph) + 0.5 * morph];
+      const topDip = [0.0 + sway * 0.4, 4.0 * (1.0 - morph) - 17.5 * morph * pulse];
+      const leftLobe = [
+        -2.0 * (1.0 - morph) - 16.5 * morph * pulse + sway,
+        4.0 * (1.0 - morph) - 13.5 * morph * pulse
+      ];
+      const rightLobe = [
+        2.0 * (1.0 - morph) + 16.5 * morph * pulse + sway,
+        4.0 * (1.0 - morph) - 13.5 * morph * pulse
+      ];
+
+      const curves = [
+        [
+          anchorL,
+          [anchorL[0] + 4 * morph, anchorL[1] - 3 * morph],
+          [-4 * morph, crossPt[1] + 5 * morph],
+          crossPt
+        ],
+        [
+          crossPt,
+          [5 * morph, crossPt[1] - 5 * morph],
+          [19 * morph * pulse, -4 * morph * pulse],
+          rightLobe
+        ],
+        [
+          rightLobe,
+          [15 * morph * pulse, -24.5 * morph * pulse],
+          [4.5 * morph * pulse, -24.5 * morph * pulse],
+          topDip
+        ],
+        [
+          topDip,
+          [-4.5 * morph * pulse, -24.5 * morph * pulse],
+          [-15 * morph * pulse, -24.5 * morph * pulse],
+          leftLobe
+        ],
+        [
+          leftLobe,
+          [-19 * morph * pulse, -4 * morph * pulse],
+          [-5 * morph, crossPt[1] - 5 * morph],
+          crossPt
+        ],
+        [
+          crossPt,
+          [4 * morph, crossPt[1] + 5 * morph],
+          [anchorR[0] - 4 * morph, anchorR[1] - 3 * morph],
+          anchorR
+        ]
+      ];
+
+      const pts = [];
+      const steps = 65;
+      for (let c = 0; c < curves.length; c++) {
+        const [p0, p1, p2, p3] = curves[c];
+        for (let i = 0; i < steps; i++) {
+          pts.push(cubicBezier(p0, p1, p2, p3, i / steps));
+        }
+      }
+      pts.push(anchorR);
+      return pts;
+    }
+
+    let mainStartTime = performance.now();
+    let buttonShown = false;
+
+    function resetMainAnimation() {
+      mainStartTime = performance.now();
+      buttonShown = false;
+      heartBtn.classList.remove("visible");
+    }
+
+    replayMainBtn.addEventListener("click", resetMainAnimation);
+
+    /* =========================================================
+       BAHAGIAN 2: ENJIN POPUP BUNGA MAWAR MEKAR (art.py)
+       ========================================================= */
+    const roseModal = document.getElementById("roseModal");
+    const roseCanvas = document.getElementById("roseCanvas");
+    const rCtx = roseCanvas.getContext("2d");
+    const replayRoseBtn = document.getElementById("replayRoseBtn");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const messageBox = document.getElementById("messageBox");
+
+    const R_WIDTH = 620;
+    const R_HEIGHT = 430;
+    const R_CW = 5;
+    const R_CH = 8;
+    const R_COLS = Math.floor(R_WIDTH / R_CW); // 124
+    const R_ROWS = Math.floor(R_HEIGHT / R_CH); // 53
+
+    // Pemalar masa & urutan tepat seperti dalam kod gambar art.py
+    const O_MAX = 1.66;
+    const DRAW = [0.3, 5.4];
+
+    // Senarai titik pra-kira untuk Batang, Daun, Sepal & Kelopak Mawar
+    const rosePoints = [];
+
+    function initRoseGeometry() {
+      rosePoints.length = 0;
+      const ASCII_SHADE = ".,:;!+*#%@";
+
+      // 1. STEM (Batang tumbuh dari bawah ke atas: order 0.0 -> 0.90)
+      const stemSteps = 140;
+      for (let i = 0; i <= stemSteps; i++) {
+        const s = i / stemSteps; // 0 (bawah) ke 1 (atas)
+        const wy = 21.0 - s * 22.5; // dari y=21 naik ke y=-1.5
+        const curveX = Math.sin(s * Math.PI) * 0.9 - Math.sin(s * Math.PI * 2) * 0.3;
+
+        for (let w = -2; w <= 2; w++) {
+          const wx = curveX + w * 0.35;
+          const norm = 1.0 - Math.abs(w) / 2.6;
+          const order = s * 0.90;
+          const ch = w === 0 ? "|" : (w < 0 ? "/" : "\\");
+          const g = Math.floor(75 + norm * 135);
+          const r = Math.floor(15 + norm * 30);
+          const b = Math.floor(25 + norm * 40);
+          rosePoints.push({
+            wx, wy, order,
+            ch: norm > 0.7 ? "#" : ch,
+            color: `rgb(${r},${g},${b})`,
+            swayWeight: Math.pow(s, 1.4)
+          });
+        }
+      }
+
+      // 2. LEAVES (Daun kiri & kanan terbuka: leaf_o = LEAF_AT + 0.05 + u * 0.25)
+      const leavesConfig = [
+        { attachS: 0.34, attachY: 13.3, dir: -1, angle: -0.45, len: 8.5, wid: 3.1 },
+        { attachS: 0.56, attachY: 8.4,  dir: 1,  angle: 0.42,  len: 8.8, wid: 3.2 }
+      ];
+
+      leavesConfig.forEach((lf) => {
+        const baseX = Math.sin(lf.attachS * Math.PI) * 0.9;
+        const baseY = lf.attachY;
+        for (let uStep = 0; uStep <= 38; uStep++) {
+          const u = uStep / 38;
+          // Profil daun bujur bergerigi
+          const serration = 1.0 + 0.08 * Math.sin(u * 28.0);
+          const halfW = Math.pow(Math.sin(u * Math.PI), 0.75) * lf.wid * serration;
+
+          for (let vStep = -12; vStep <= 12; vStep++) {
+            const v = vStep / 12;
+            const localX = u * lf.len * lf.dir;
+            const localY = v * halfW - Math.sin(u * Math.PI) * 0.9;
+
+            const ca = Math.cos(lf.angle);
+            const sa = Math.sin(lf.angle);
+            const wx = baseX + localX * ca - localY * sa;
+            const wy = baseY + localX * sa + localY * ca;
+
+            const veinDist = Math.abs(v);
+            const isMidrib = veinDist < 0.14;
+            const shade = isMidrib ? 0.95 : Math.max(0.25, 1.0 - veinDist * 0.7);
+            const idx = Math.min(ASCII_SHADE.length - 1, Math.floor(shade * (ASCII_SHADE.length - 1)));
+
+            const order = lf.attachS + 0.05 + u * 0.25 + veinDist * 0.06;
+            const g = Math.floor(80 + shade * 145);
+            const r = Math.floor(18 + shade * 35);
+            const b = Math.floor(28 + shade * 40);
+
+            rosePoints.push({
+              wx, wy, order,
+              ch: isMidrib ? "=" : ASCII_SHADE[idx],
+              color: `rgb(${r},${g},${b})`,
+              swayWeight: Math.pow(lf.attachS + u * 0.2, 1.4)
+            });
+          }
+        }
+      });
+
+      // 3. SEPALS (Kelopak hijau di bawah kuntum mawar: sepal_o = 1.0 + 0.10 * u)
+      const sepals = [
+        { dir: -1, ang: -2.2, len: 5.5 },
+        { dir: -1, ang: -1.7, len: 4.2 },
+        { dir: 1,  ang: 2.2,  len: 5.5 },
+        { dir: 1,  ang: 1.7,  len: 4.2 }
+      ];
+      sepals.forEach((sp) => {
+        for (let uStep = 0; uStep <= 22; uStep++) {
+          const u = uStep / 22;
+          const wSpan = (1.0 - u) * 0.9;
+          for (let v = -1; v <= 1; v += 0.5) {
+            const wx = Math.sin(sp.ang) * u * sp.len + v * wSpan;
+            const wy = -1.5 - Math.cos(sp.ang) * u * sp.len * 0.7;
+            const order = 1.0 + 0.10 * u;
+            rosePoints.push({
+              wx, wy, order,
+              ch: u > 0.7 ? ":" : "*",
+              color: `rgb(30, ${Math.floor(110 + (1 - u) * 80)}, 45)`,
+              swayWeight: 0.95
+            });
+          }
+        }
+      });
+
+      // 4. ROSE PETALS (Kelopak mawar berlapis-lapis: petal_o = 1.10 + PETAL_V * 0.42 + PETAL_SJ * 0.10)
+      // Disusun daripada kelopak luar ke kelopak dalam supaya lukisan dari dalam/bawah mempunyai efek 3D
+      const petals = [
+        // Lapisan Luar (Kembang lebar)
+        { cx: -8.5, cy: -9.5,  rx: 7.5, ry: 6.5, tilt: -0.35, layer: 0.85, cup: 1.6 },
+        { cx: 8.5,  cy: -9.5,  rx: 7.5, ry: 6.5, tilt: 0.35,  layer: 0.88, cup: 1.6 },
+        { cx: -11.5,cy: -12.5, rx: 5.5, ry: 5.2, tilt: -0.55, layer: 0.96, cup: 1.3 },
+        { cx: 11.5, cy: -12.5, rx: 5.5, ry: 5.2, tilt: 0.55,  layer: 0.98, cup: 1.3 },
+        { cx: 0.0,  cy: -7.5,  rx: 8.5, ry: 6.2, tilt: 0.0,   layer: 0.75, cup: 1.8 },
+
+        // Lapisan Tengah (Kelopak berlapis)
+        { cx: -5.5, cy: -13.0, rx: 6.8, ry: 6.0, tilt: -0.20, layer: 0.52, cup: 1.5 },
+        { cx: 5.5,  cy: -13.0, rx: 6.8, ry: 6.0, tilt: 0.20,  layer: 0.55, cup: 1.5 },
+        { cx: 0.0,  cy: -11.5, rx: 7.5, ry: 6.2, tilt: 0.0,   layer: 0.42, cup: 1.7 },
+
+        // Lapisan Atas & Pusaran Dalam Kuntum (Inner Swirl)
+        { cx: -4.2, cy: -16.2, rx: 5.8, ry: 4.5, tilt: -0.12, layer: 0.28, cup: 1.2 },
+        { cx: 4.2,  cy: -16.2, rx: 5.8, ry: 4.5, tilt: 0.12,  layer: 0.30, cup: 1.2 },
+        { cx: 0.0,  cy: -15.5, rx: 6.2, ry: 4.8, tilt: 0.0,   layer: 0.15, cup: 1.4 },
+        { cx: -1.8, cy: -17.5, rx: 4.0, ry: 3.2, tilt: -0.08, layer: 0.05, cup: 1.0 },
+        { cx: 1.8,  cy: -17.5, rx: 4.0, ry: 3.2, tilt: 0.08,  layer: 0.08, cup: 1.0 }
+      ];
+
+      petals.forEach((pt, pIdx) => {
+        const uSteps = 28;
+        const vSteps = 32;
+        for (let ui = 0; ui <= uSteps; ui++) {
+          const u = ui / uSteps; // 0 (pangkal kelopak) -> 1 (hujung bibir kelopak)
+          for (let vi = -vSteps / 2; vi <= vSteps / 2; vi++) {
+            const v = vi / (vSteps / 2); // -1 ke 1
+
+            // Bentuk kelopak mawar bulat & berombak di hujung atas
+            const widthProfile = Math.sin(u * Math.PI * 0.88);
+            if (Math.abs(v) > widthProfile + 0.15) continue;
+
+            const ruffle = Math.sin(v * Math.PI * 2.5 + pIdx) * 0.45 * Math.pow(u, 2);
+            const lx = v * pt.rx * widthProfile;
+            const ly = (0.5 - u) * pt.ry + (v * v) * pt.cup + ruffle;
+
+            const ca = Math.cos(pt.tilt);
+            const sa = Math.sin(pt.tilt);
+            const wx = pt.cx + lx * ca - ly * sa;
+            const wy = pt.cy + lx * sa + ly * ca;
+
+            // Kira pencahayaan 3D kelopak: bahagian bibir atas (u -> 1) & tepi melengkung lebih cerah
+            const edgeDist = Math.abs(v) / Math.max(0.2, widthProfile);
+            const rimGlow = Math.pow(u, 2.2) * 0.65 + Math.pow(edgeDist, 3.0) * 0.35;
+            const depthShade = 0.22 + 0.45 * u + 0.33 * rimGlow - 0.12 * pt.layer;
+            const shade = Math.max(0.15, Math.min(1.0, depthShade));
+
+            const charIdx = Math.min(ASCII_SHADE.length - 1, Math.floor(shade * (ASCII_SHADE.length - 1)));
+            const r = Math.min(255, Math.floor(95 + shade * 160));
+            const g = Math.min(255, Math.floor(10 + Math.pow(shade, 2.6) * 145));
+            const b = Math.min(255, Math.floor(20 + Math.pow(shade, 2.3) * 155));
+
+            // Formula order tepat daripada gambar art.py: 1.10 + PETAL_V * 0.42 + PETAL_SJ * 0.10
+            const order = 1.10 + pt.layer * 0.42 + u * 0.10;
+
+            rosePoints.push({
+              wx, wy, order,
+              ch: ASCII_SHADE[charIdx],
+              color: `rgb(${r},${g},${b})`,
+              swayWeight: 1.0 + (1.0 - wy / -22.0) * 0.3
+            });
+          }
+        }
+      });
+    }
+
+    initRoseGeometry();
+
+    // Bintang-bintang ASCII 8-penjuru seperti dalam gambar kedua
+    const asciiStars = [
+      { cx: 18,  cy: 11, phase: 0.2, size: 2 },
+      { cx: 88,  cy: 8,  phase: 1.5, size: 3 },
+      { cx: 102, cy: 19, phase: 2.8, size: 3 },
+      { cx: 114, cy: 27, phase: 0.9, size: 2 },
+      { cx: 15,  cy: 26, phase: 3.7, size: 3 },
+      { cx: 30,  cy: 39, phase: 4.5, size: 2 },
+      { cx: 98,  cy: 36, phase: 2.1, size: 2 }
+    ];
+
+    const roseSmallDots = Array.from({ length: 45 }, () => ({
+      c: Math.floor(Math.random() * R_COLS),
+      r: Math.floor(Math.random() * R_ROWS),
+      phase: Math.random() * Math.PI * 2
+    }));
+
+    let modalOpen = false;
+    let roseStartTime = 0;
+
+    function openRoseModal() {
+      modalOpen = true;
+      roseStartTime = performance.now();
+      messageBox.classList.remove("show");
+      roseModal.classList.add("open");
+    }
+
+    function closeRoseModal() {
+      modalOpen = false;
+      roseModal.classList.remove("open");
+    }
+
+    heartBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openRoseModal();
+    });
+
+    replayRoseBtn.addEventListener("click", () => {
+      roseStartTime = performance.now();
+      messageBox.classList.remove("show");
+    });
+
+    closeModalBtn.addEventListener("click", closeRoseModal);
+    roseModal.addEventListener("click", (e) => {
+      if (e.target === roseModal) closeRoseModal();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Escape" && modalOpen) {
+        closeRoseModal();
+      } else if (e.code === "Space") {
+        e.preventDefault();
+        if (modalOpen) {
+          roseStartTime = performance.now();
+          messageBox.classList.remove("show");
+        } else {
+          resetMainAnimation();
+        }
+      }
+    });
+
+    // Fungsi lukis animasi Bunga Mawar Mekar (art.py)
+    function renderRosePopup(now) {
+      const t = (now - roseStartTime) / 1000.0;
+
+      rCtx.fillStyle = "#040407";
+      rCtx.fillRect(0, 0, R_WIDTH, R_HEIGHT);
+      rCtx.font = "bold 9px Consolas, 'Courier New', monospace";
+      rCtx.textBaseline = "top";
+
+      // 1. Lukis titik bintang halus & bintang bersinar ASCII
+      for (let i = 0; i < roseSmallDots.length; i++) {
+        const d = roseSmallDots[i];
+        const a = 0.15 + 0.25 * Math.sin(t * 2.0 + d.phase);
+        rCtx.fillStyle = `rgba(200, 205, 220, ${a.toFixed(2)})`;
+        rCtx.fillText(".", d.c * R_CW, d.r * R_CH);
+      }
+
+      for (let i = 0; i < asciiStars.length; i++) {
+        const st = asciiStars[i];
+        const pulse = 0.35 + 0.65 * Math.max(0, Math.sin(t * 1.8 + st.phase));
+        if (pulse < 0.45) continue;
+        const alpha = (pulse * 0.55).toFixed(2);
+        rCtx.fillStyle = `rgba(210, 215, 230, ${alpha})`;
+        rCtx.fillText("*", st.cx * R_CW, st.cy * R_CH);
+        for (let k = 1; k <= st.size; k++) {
+          rCtx.fillText("|", st.cx * R_CW, (st.cy - k) * R_CH);
+          rCtx.fillText("|", st.cx * R_CW, (st.cy + k) * R_CH);
+          rCtx.fillText("-", (st.cx - k) * R_CW, st.cy * R_CH);
+          rCtx.fillText("-", (st.cx + k) * R_CW, st.cy * R_CH);
+          if (k === 1) {
+            rCtx.fillText("\\", (st.cx - 1) * R_CW, (st.cy - 1) * R_CH);
+            rCtx.fillText("/", (st.cx + 1) * R_CW, (st.cy - 1) * R_CH);
+            rCtx.fillText("/", (st.cx - 1) * R_CW, (st.cy + 1) * R_CH);
+            rCtx.fillText("\\", (st.cx + 1) * R_CW, (st.cy + 1) * R_CH);
+          }
+        }
+      }
+
+      // 2. Kira fungsi reveal(order, t) seperti dalam gambar art.py
+      const head = ((t - DRAW[0]) / (DRAW[1] - DRAW[0])) * O_MAX;
+      const swayDeg = Math.sin(t * 1.4) * 1.6;
+      const swayOffset = Math.sin(t * 1.4) * 1.1;
+
+      const cellChar = new Array(R_COLS * R_ROWS).fill(null);
+      const cellColor = new Array(R_COLS * R_ROWS).fill(null);
+      let activeLetters = 0;
+
+      for (let i = 0; i < rosePoints.length; i++) {
+        const pt = rosePoints[i];
+        const soft = pt.order >= 1.0 ? 0.09 : 0.05;
+        const vis = smoothstep((head - pt.order) / soft);
+        if (vis <= 0.02) continue;
+
+        const isLeadingEdge = Math.abs(head - pt.order) < 0.03;
+        const wx = pt.wx + swayOffset * pt.swayWeight;
+        const wy = pt.wy;
+
+        const col = Math.floor(wx / 0.36 + R_COLS / 2);
+        const row = Math.floor((wy + 2.0) / 0.85 + R_ROWS / 2);
+
+        if (col >= 0 && col < R_COLS && row >= 0 && row < R_ROWS) {
+          const idx = row * R_COLS + col;
+          cellChar[idx] = isLeadingEdge ? "@" : pt.ch;
+          cellColor[idx] = isLeadingEdge ? "rgb(255, 225, 235)" : pt.color;
+        }
+      }
+
+      for (let r = 0; r < R_ROWS; r++) {
+        const py = r * R_CH;
+        const rowOff = r * R_COLS;
+        for (let c = 0; c < R_COLS; c++) {
+          const ch = cellChar[rowOff + c];
+          if (ch !== null) {
+            activeLetters++;
+            rCtx.fillStyle = cellColor[rowOff + c];
+            rCtx.fillText(ch, c * R_CW, py);
+          }
+        }
+      }
+
+      // 3. Lukis HUD Telemetry seperti dalam gambar kedua
+      const bloomPct = Math.min(100.0, Math.max(0.0, ((head - 1.0) / (O_MAX - 1.0)) * 100.0));
+      rCtx.font = "10px Consolas, 'Courier New', monospace";
+      rCtx.fillStyle = "rgba(235, 110, 130, 0.8)";
+      rCtx.fillText(`t ${t.toFixed(2).padStart(5, "0")}s`, R_WIDTH - 68, 12);
+
+      rCtx.fillStyle = "rgba(160, 165, 180, 0.7)";
+      rCtx.fillText(`bloom ${bloomPct.toFixed(1)}%   sway ${Math.abs(swayDeg).toFixed(2).padStart(6, "0")}°`, 14, R_HEIGHT - 34);
+      rCtx.fillText(`letters ${activeLetters.toLocaleString()}`, 14, R_HEIGHT - 20);
+
+      // Paparkan teks "STAY STRONG QAYSARA AMANI" apabila bunga mula mekar
+      if (t >= 2.2 && !messageBox.classList.contains("show")) {
+        messageBox.classList.add("show");
+      }
+    }
+
+    /* =========================================================
+       GELUNG UTAMA ANIMASI (60 FPS)
+       ========================================================= */
+    function animate(now) {
+      const tAnim = (now - mainStartTime) / 1000.0;
+
+      ctx.fillStyle = "rgb(5, 5, 8)";
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      // Bintang berkelip di skrin utama
+      for (let i = 0; i < bgStars.length; i++) {
+        const st = bgStars[i];
+        const alpha = 0.15 + 0.25 * Math.sin(tAnim * 1.8 + st.phase);
+        ctx.fillStyle = `rgba(210, 215, 235, ${alpha.toFixed(2)})`;
+        ctx.fillRect(st.x, st.y, st.size, st.size);
+      }
+
+      ctx.font = "bold 11px Consolas, 'Courier New', monospace";
+      ctx.textBaseline = "top";
+
+      let leftOx, curl, handOy;
+
+      if (tAnim < 2.2) {
+        const p = smoothstep(tAnim / 2.2);
+        leftOx = -88.0 + 40.0 * p;
+        curl = 0.22 * (1.0 - p) - 0.06 * p;
+        handOy = 20.0 - 4.0 * p;
+      } else if (tAnim < 3.0) {
+        const p = smoothstep((tAnim - 2.2) / 0.8);
+        leftOx = -48.0 - 1.5 * p;
+        curl = -0.06 + 0.06 * p;
+        handOy = 16.0 + 0.5 * p;
+      } else {
+        const p = smoothstep((tAnim - 3.0) / 3.0);
+        const swayX = Math.sin((tAnim - 3.0) * 1.5) * 0.55 * p;
+        leftOx = -49.5 - 11.5 * p + swayX;
+        curl = 0.035 * Math.sin((tAnim - 3.0) * 1.5) * p;
+        handOy = 16.5 + 2.5 * p + Math.cos((tAnim - 3.0) * 1.3) * 0.35 * p;
+      }
+
+      const rightOx = -leftOx;
+
+      // 1. Lukis Tangan ASCII
+      const posedHand = getPosedHand(curl);
+      rasterizeHands(posedHand, leftOx, rightOx, handOy);
+
+      for (let r = 0; r < ROWS; r++) {
+        const rowOffset = r * COLS;
+        const py = r * CHAR_H;
+        for (let c = 0; c < COLS; c++) {
+          const val = handGrid[rowOffset + c];
+          if (val > 0) {
+            const idx = Math.min(HAND_CHARS.length - 1, Math.floor(val * (HAND_CHARS.length - 1)));
+            ctx.fillStyle = GRAY_COLORS[idx];
+            ctx.fillText(HAND_CHARS[idx], c * CHAR_W, py);
+          }
+        }
+      }
+
+      // 2. Koordinat hujung jari telunjuk
+      const indexTipSeg = posedHand[11];
+      const ix2 = indexTipSeg[2];
+      const iy2 = indexTipSeg[3];
+      const tipLeft = [leftOx + ix2, handOy + iy2];
+      const tipRight = [rightOx - ix2, handOy + iy2];
+
+      // 3. Lukis Benang Merah & Bentuk Hati yang muat penuh di dalam skrin
+      if (tAnim >= 1.9) {
+        const grow = smoothstep((tAnim - 1.9) / 2.5);
+        const morph = smoothstep((tAnim - 2.5) / 3.0);
+
+        const allPts = buildRedString(tipLeft, tipRight, tAnim, morph);
+        const total = allPts.length;
+
+        let activePts;
+        if (grow >= 0.999) {
+          activePts = allPts;
+        } else {
+          const half = Math.floor((total / 2) * grow);
+          activePts = allPts.slice(0, half).concat(allPts.slice(total - half));
+        }
+
+        stringGrid.fill(0);
+
+        for (let i = 0; i < activePts.length; i++) {
+          const [wx, wy] = activePts[i];
+          const col = Math.floor(wx / 0.55 + COLS / 2);
+          const row = Math.floor(wy / 0.95 + ROWS / 2);
+
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              const c = col + dx;
+              const r = row + dy;
+              if (c >= 0 && c < COLS && r >= 0 && r < ROWS) {
+                const intensity = (dx === 0 && dy === 0) ? 3 : ((dx === 0 || dy === 0) ? 2 : 1);
+                const idx = r * COLS + c;
+                if (stringGrid[idx] < intensity) {
+                  stringGrid[idx] = intensity;
+                }
+              }
+            }
+          }
+        }
+
+        for (let r = 0; r < ROWS; r++) {
+          const rowOffset = r * COLS;
+          const py = r * CHAR_H;
+          for (let c = 0; c < COLS; c++) {
+            const intensity = stringGrid[rowOffset + c];
+            if (intensity > 0) {
+              let ch;
+              if (intensity === 3) {
+                ch = (c + r) % 2 === 0 ? "@" : "#";
+              } else if (intensity === 2) {
+                ch = (c + r) % 3 === 0 ? "*" : ":";
+              } else {
+                ch = ".";
+              }
+              ctx.fillStyle = RED_COLORS[ch];
+              ctx.fillText(ch, c * CHAR_W, py);
+            }
+          }
+        }
+
+        // Kesan percikan cahaya ketika hujung jari telunjuk bersentuhan
+        if (tAnim >= 1.9 && tAnim <= 2.8) {
+          const midC = Math.floor(COLS / 2);
+          const midR = Math.floor(((tipLeft[1] + tipRight[1]) * 0.5) / 0.95 + ROWS / 2);
+          const offsets = [[-2, -1], [2, -1], [0, -2], [-1, 1], [1, 1]];
+          ctx.fillStyle = "rgb(255, 220, 225)";
+          for (let i = 0; i < offsets.length; i++) {
+            const [dc, dr] = offsets[i];
+            if ((Math.floor(tAnim * 15) + dc + dr) % 2 === 0) {
+              ctx.fillText("*", (midC + dc) * CHAR_W, (midR + dr) * CHAR_H);
+            }
+          }
+        }
+
+        // Tunjukkan butang ❤ Click Here ❤ di tengah hati
+        if (tAnim >= 5.2 && !buttonShown) {
+          buttonShown = true;
+          heartBtn.classList.add("visible");
+        }
+      }
+
+      // 4. Jika Popup Modal dibuka, lukis animasi Bunga Mawar Mekar
+      if (modalOpen) {
+        renderRosePopup(now);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
